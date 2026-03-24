@@ -12,37 +12,58 @@
 
 #include "FusionConvention.h"
 #include "FusionMath.h"
+#include "FusionResult.h"
 #include <stdbool.h>
 
 //------------------------------------------------------------------------------
 // Definitions
 
 /**
+ * @brief Mode.
+ */
+typedef enum {
+    FusionAhrsModeMagnetic,
+    FusionAhrsModeGyroscope,
+    FusionAhrsModeExternal,
+    FusionAhrsModeAnchored,
+} FusionAhrsMode;
+
+/**
  * @brief Settings.
  */
 typedef struct {
-    float sampleRate;
+    FusionAhrsMode mode;
     FusionConvention convention;
+    float sampleRate; // Hz
     float gain;
-    float gyroscopeRange;
-    float accelerationRejection;
-    float magneticRejection;
-    unsigned int recoveryTriggerPeriod;
+    float gyroscopeRange; // degrees per second
+    float accelerationRejection; // degrees
+    float magneticRejection; // degrees
+    unsigned int recoveryTriggerPeriod; // samples
 } FusionAhrsSettings;
 
 /**
  * @brief AHRS structure. All members are private.
  */
 typedef struct {
+    // Settings
     FusionAhrsSettings settings;
     float samplePeriod;
+
+    // Measurements
     FusionQuaternion quaternion;
     FusionVector accelerometer;
     FusionVector halfGravity;
+
+    // Startup
     bool startup;
     float rampedGain;
     float rampedGainStep;
+
+    // Gyroscope overrange
     bool angularRateRecovery;
+
+    // Acceleration and magnetic rejection
     FusionVector halfAccelerometerFeedback;
     FusionVector halfMagnetometerFeedback;
     bool accelerometerIgnored;
@@ -51,6 +72,8 @@ typedef struct {
     bool magnetometerIgnored;
     int magneticRecoveryTrigger;
     int magneticRecoveryTimeout;
+
+    // Anchored heading
 } FusionAhrs;
 
 /**
@@ -87,15 +110,19 @@ void FusionAhrsInitialise(FusionAhrs *const ahrs);
 
 void FusionAhrsRestart(FusionAhrs *const ahrs);
 
+void FusionAhrsSkipStartup(FusionAhrs *const ahrs);
+
 void FusionAhrsSetSettings(FusionAhrs *const ahrs, const FusionAhrsSettings *const settings);
 
 void FusionAhrsSetSamplePeriod(FusionAhrs *const ahrs, const float samplePeriod);
 
-void FusionAhrsUpdate(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer, const FusionVector magnetometer);
+FusionResult FusionAhrsUpdateMagnetic(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer, const FusionVector magnetometer);
 
-void FusionAhrsUpdateNoMagnetometer(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer);
+FusionResult FusionAhrsUpdateGyroscope(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer);
 
-void FusionAhrsUpdateExternalHeading(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer, const float heading);
+FusionResult FusionAhrsUpdateExternal(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer, const float heading);
+
+FusionResult FusionAhrsUpdateAnchored(FusionAhrs *const ahrs, const FusionVector gyroscope, const FusionVector accelerometer);
 
 FusionQuaternion FusionAhrsGetQuaternion(const FusionAhrs *const ahrs);
 
@@ -111,7 +138,11 @@ FusionAhrsInternalStates FusionAhrsGetInternalStates(const FusionAhrs *const ahr
 
 FusionAhrsFlags FusionAhrsGetFlags(const FusionAhrs *const ahrs);
 
-void FusionAhrsSetHeading(FusionAhrs *const ahrs, const float heading);
+FusionResult FusionAhrsSetHeading(FusionAhrs *const ahrs, const float heading);
+
+FusionResult FusionAhrsSetAnchor(FusionAhrs *const ahrs);
+
+FusionResult FusionAhrsGetAnchorResult(FusionAhrs *const ahrs);
 
 #endif
 
