@@ -1,0 +1,28 @@
+{
+  "name": "Fusion",
+  "version": "0.0.0",
+  "description": "Attitude and Heading Reference System (AHRS) algorithm",
+  "keywords": "AHRS, IMU, sensor fusion, quaternion",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xioTechnologies/Fusion.git"
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Seb Madgwick",
+      "url": "https://github.com/xioTechnologies"
+    }
+  ],
+  "platforms": "*",
+  "frameworks": "*",
+  "export": {
+    "include": [
+      "Fusion"
+    ]
+  },
+  "build": {
+    "srcDir": "Fusion",
+    "includeDir": "Fusion"
+  }
+}
