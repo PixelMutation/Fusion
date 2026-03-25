@@ -26,7 +26,8 @@ typedef struct {
     float gyroscopeRange;
     float accelerationRejection;
     float magneticRejection;
-    unsigned int recoveryTriggerPeriod;
+    unsigned int accelerationRecoveryTriggerPeriod;
+    unsigned int magneticRecoveryTriggerPeriod;
 } FusionAhrsSettings;
 
 /**
